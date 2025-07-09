@@ -13,7 +13,9 @@ import { CategoryModule } from './modules/category/module'
 import { LargeTableModule } from './modules/large-table/module'
 import { PokemonModule } from './modules/pokemon/module'
 import { PostModule } from './modules/post/module'
+import { ProfileModule } from './modules/profile/module'
 import { UserModule } from './modules/user/module'
+import { AuthModule } from './modules/auth/module'
 @Module({
   controllers: [AppController],
   imports: [
@@ -22,11 +24,12 @@ import { UserModule } from './modules/user/module'
     ScheduleModule.forRoot(),
     PokemonModule,
     UserModule,
-    ProfileModulee,
+    ProfileModule,
     PostModule,
     CategoryModule,
     LargeTableModule,
     NotificationModule,
+    AuthModule,
     ServeStaticModule.forRoot({
       rootPath: join('./src/static'),
       serveRoot: '/static',

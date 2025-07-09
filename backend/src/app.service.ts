@@ -43,7 +43,7 @@ export class AppService {
         success: true,
         timestamp: new Date(),
         recordCount: Array.isArray(analyticsData) ? analyticsData.length : 0,
-        data: analyticsData,
+        data: JSON.parse(JSON.stringify(analyticsData, this.serialize)),
         message: 'Simplified analytics data retrieved successfully',
       }
     } catch (error) {
@@ -59,5 +59,9 @@ export class AppService {
         },
       }
     }
+  }
+
+  serialize(_key: string, value: any): any {
+    return typeof value === 'bigint' ? value.toString() : value
   }
 }

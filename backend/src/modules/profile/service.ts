@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ZodValidationError } from 'src/@shared/graphql/errors'
 import { ExecutionDTOType, MethodType } from 'src/@shared/types/auth'
-import { checkPermission } from 'src/@shared/utils'
+import { buildPrismaWhere, checkPermission } from 'src/@shared/utils'
 import { PrismaService } from 'src/infra/database/prisma.service'
 import { CreateDTO, DeleteDTO, EntityResponse, GetDTO, UpdateDTO } from './entities/entity'
 import { moduleMetadata } from './moduleMetadata'
@@ -116,7 +116,7 @@ export class Service {
       },
     },
     execution: async (data: ExecutionDTOType<GetDTO, 'get'>) => {
-      const where = {}
+      const where = buildPrismaWhere(data.datap.andWhere)
       const take = data.datap.take || 10
       const skip = data.datap.skip || 0
 

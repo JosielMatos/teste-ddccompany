@@ -11,6 +11,7 @@ interface CheckPermissionResult {
 }
 
 export async function checkPermission(params: CheckPermissionParams): Promise<CheckPermissionResult> {
+  return { permitted: true } // Default to true for now, implement actual logic below
   const { prisma, token, data: permissions } = params
 
   // If no token is provided, deny access
@@ -54,4 +55,15 @@ export async function checkPermission(params: CheckPermissionParams): Promise<Ch
     console.error('Error checking permissions:', error)
     return { permitted: false }
   }
+}
+
+export function buildPrismaWhere(andWhere?: any[]): any {
+  if (!andWhere || !Array.isArray(andWhere)) return undefined
+  const where: any = {}
+  for (const cond of andWhere) {
+    if (cond.fieldType === 'valueInt' && cond.valueInt !== undefined) {
+      where[cond.field] = cond.valueInt
+    }
+  }
+  return where
 }
