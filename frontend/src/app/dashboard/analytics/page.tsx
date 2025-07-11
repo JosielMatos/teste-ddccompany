@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import api from '@/lib/axios'
+import { useAuth } from '@/hooks/useAuth'
 
 interface Analytics {
   user_id: number
@@ -54,6 +55,7 @@ const fieldLabels: Record<keyof Analytics, string> = {
 }
 
 export default function AnalyticsPage() {
+  useAuth()
   const [analytics, setAnalytics] = useState<Analytics[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -88,6 +90,9 @@ export default function AnalyticsPage() {
                 }
                 if (key === 'category_diversity_percentage') {
                   displayValue = `${value}%`
+                }
+                if (key === 'avg_content_length' || key === 'user_age_days') {
+                  displayValue = Math.round(value)
                 }
                 return (
                   <div key={key}>

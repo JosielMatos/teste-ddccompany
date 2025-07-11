@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import api from '@/lib/axios'
+import { Pagination } from '@/app/components/Pagination'
+import { Modal } from '@/app/components/Modal'
+import { FiEdit, FiTrash } from 'react-icons/fi'
 
 interface UserResponse {
   data: {
@@ -32,29 +35,93 @@ interface User {
   profile: Profile
 }
 
+const TAKE = 10
+
 export default function UserPage() {
   const { id } = useParams()
   const [user, setUser] = useState<User | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
-  console.log(posts)
+  const [postsCount, setPostsCount] = useState(0)
+  const [postsPage, setPostsPage] = useState(1)
   const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [form, setForm] = useState({ title: '', content: '', published: false })
+  const [creating, setCreating] = useState(false)
+  const [editingPost, setEditingPost] = useState<Post | null>(null)
+  const isEditing = !!editingPost
 
-  useEffect(() => {
-    if (!id) return
-    api.get<UserResponse>(`/users/${id}`).then((res) => setUser(res.data.data.items[0] as User))
-
-    api
+  function loadPosts() {
+    return api
       .get<UserResponse>(`/posts`, {
         params: {
           andWhere: JSON.stringify([{ field: 'authorId', fieldType: 'valueInt', valueInt: parseInt(id as string) }]),
+          skip: (postsPage - 1) * TAKE,
+          take: TAKE,
         },
       })
-      .then((res) => setPosts(res.data.data.items as Post[]))
-      .finally(() => setLoading(false))
-  }, [id])
+      .then((res) => {
+        setPosts(res.data.data.items as Post[])
+        setPostsCount(res.data.data.count)
+      })
+  }
+
+  async function handleSubmitPost(e: React.FormEvent) {
+    e.preventDefault()
+    setCreating(true)
+    try {
+      if (isEditing && editingPost) {
+        await api.put(`/posts/${editingPost.id}`, {
+          ...form,
+        })
+      } else {
+        await api.post('/posts', {
+          ...form,
+          author: { connect: { id: Number(id) } },
+        })
+      }
+      setShowModal(false)
+      setForm({ title: '', content: '', published: false })
+      setEditingPost(null)
+      // Atualiza a lista de posts
+      loadPosts()
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  function handleOpenEdit(post: Post) {
+    setEditingPost(post)
+    setForm({
+      title: post.title,
+      content: post.content,
+      published: post.published,
+    })
+    setShowModal(true)
+  }
+
+  async function handleDeletePost(postId: number) {
+    if (!confirm('Tem certeza que deseja deletar este post?')) return
+    try {
+      await api.delete(`/posts/${postId}`)
+      // Atualiza a lista de posts após deletar
+      loadPosts()
+    } catch (error) {
+      alert(`Erro ao deletar post. ${error || 'Erro desconhecido'}`)
+    }
+  }
+
+  useEffect(() => {
+    if (!id) return
+    setLoading(true)
+    api.get<UserResponse>(`/users/${id}`).then((res) => setUser(res.data.data.items[0] as User))
+
+    loadPosts().finally(() => setLoading(false))
+  }, [id, postsPage])
 
   if (loading) return <div>Carregando...</div>
   if (!user) return <div>Usuário não encontrado.</div>
+
+  const totalPostsPages = Math.ceil(postsCount / TAKE)
 
   return (
     <div className="min-h-screen bg-white p-8">
@@ -67,7 +134,65 @@ export default function UserPage() {
           <span className="font-semibold">Email:</span> {user.email}
         </p>
       </div>
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Posts</h2>
+      <div className="flex items-center justify-between max-w-4xl mx-auto mb-6">
+        <h2 className="text-2xl font-semibold text-gray-800">Posts</h2>
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer"
+          onClick={() => {
+            setEditingPost(null)
+            setForm({ title: '', content: '', published: false })
+            setShowModal(true)
+          }}
+        >
+          Novo Post
+        </button>
+      </div>
+      <Modal
+        open={showModal}
+        onClose={() => {
+          setShowModal(false)
+          setEditingPost(null)
+        }}
+        title={isEditing ? 'Editar post' : 'Criar novo post'}
+      >
+        <form onSubmit={handleSubmitPost} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Título</label>
+            <input
+              className="w-full border rounded px-3 py-2"
+              value={form.title}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Conteúdo</label>
+            <textarea
+              className="w-full border rounded px-3 py-2"
+              value={form.content || ''}
+              onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={form.published}
+              onChange={(e) => setForm((f) => ({ ...f, published: e.target.checked }))}
+              id="published"
+            />
+            <label htmlFor="published" className="text-sm">
+              Publicado
+            </label>
+          </div>
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition w-full"
+            disabled={creating}
+          >
+            {creating ? (isEditing ? 'Salvando...' : 'Criando...') : isEditing ? 'Salvar' : 'Criar'}
+          </button>
+        </form>
+      </Modal>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
         {posts.map((post) => {
           const createdDate = new Date(post.createdAt).toLocaleDateString('pt-BR')
@@ -76,6 +201,24 @@ export default function UserPage() {
               key={post.id}
               className="rounded-xl shadow-md hover:shadow-lg transition-shadow bg-amber-50 p-6 flex flex-col"
             >
+              <div className="flex gap-2 ml-auto mb-2">
+                <button
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 hover:bg-blue-200 transition cursor-pointer"
+                  onClick={() => handleOpenEdit(post)}
+                  title="Editar"
+                  type="button"
+                >
+                  <FiEdit className="text-blue-600" size={18} />
+                </button>
+                <button
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 transition cursor-pointer"
+                  onClick={() => handleDeletePost(post.id)}
+                  title="Deletar"
+                  type="button"
+                >
+                  <FiTrash className="text-red-600" size={18} />
+                </button>
+              </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">{post.title}</h3>
               <p className="text-gray-700 flex-1">{post.content}</p>
               <div className="flex flex-wrap gap-2 mt-2 mb-2">
@@ -99,6 +242,7 @@ export default function UserPage() {
           )
         })}
       </div>
+      <Pagination page={postsPage} totalPages={totalPostsPages} onPageChange={setPostsPage} />
     </div>
   )
 }
