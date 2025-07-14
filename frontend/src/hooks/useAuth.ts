@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getToken } from '@/utils/auth'
+import { jwtDecode } from 'jwt-decode'
+
+type JwtPayload = {
+  exp: number
+}
 
 export function useAuth() {
   const router = useRouter()
@@ -11,7 +16,18 @@ export function useAuth() {
     if (!storedToken) {
       router.push('/')
     } else {
-      setToken(storedToken)
+      try {
+        const decoded = jwtDecode<JwtPayload>(storedToken)
+        const isExpired = decoded.exp * 1000 < Date.now()
+        if (isExpired) {
+          router.push('/')
+        } else {
+          setToken(storedToken)
+        }
+      } catch (e) {
+        alert('Erro inesperado: ' + e)
+        router.push('/')
+      }
     }
   }, [router])
 

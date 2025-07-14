@@ -56,8 +56,31 @@ export class Service {
       },
     },
     execution: async (data: ExecutionDTOType<CreateDTO, 'create'>) => {
+      const { postCategories, ...createData } = data.datap
       const result = await this.prisma[moduleMetadata.tb].create({
-        data: data.datap as any,
+        data: createData as any,
+        include: {
+          author: true,
+          categories: {
+            include: {
+              category: true,
+            },
+          },
+        },
+      })
+
+      if (postCategories && postCategories.length > 0) {
+        await this.prisma.postCategory.createMany({
+          data: postCategories.map((categoryId: number) => ({
+            postId: result.id,
+            categoryId,
+          })),
+          skipDuplicates: true,
+        })
+      }
+
+      const postWithCategories = await this.prisma[moduleMetadata.tb].findUnique({
+        where: { id: result.id },
         include: {
           author: true,
           categories: {
@@ -71,7 +94,7 @@ export class Service {
       return {
         data: {
           count: 1,
-          items: [result],
+          items: [postWithCategories],
         },
       }
     },
@@ -160,10 +183,35 @@ export class Service {
       },
     },
     execution: async (data: ExecutionDTOType<UpdateDTO, 'update'>) => {
-      const { id, ...updateData } = data.datap
-      const result = await this.prisma[moduleMetadata.tb].update({
+      const { id, postCategories, ...updateData } = data.datap
+      await this.prisma[moduleMetadata.tb].update({
         where: { id },
         data: updateData as any,
+        include: {
+          author: true,
+          categories: {
+            include: {
+              category: true,
+            },
+          },
+        },
+      })
+
+      if (postCategories) {
+        await this.prisma.postCategory.deleteMany({ where: { postId: id } })
+        if (postCategories.length > 0) {
+          await this.prisma.postCategory.createMany({
+            data: postCategories.map((categoryId: number) => ({
+              postId: id,
+              categoryId,
+            })),
+            skipDuplicates: true,
+          })
+        }
+      }
+
+      const postWithCategories = await this.prisma[moduleMetadata.tb].findUnique({
+        where: { id },
         include: {
           author: true,
           categories: {
@@ -177,7 +225,7 @@ export class Service {
       return {
         data: {
           count: 1,
-          items: [result],
+          items: [postWithCategories],
         },
       }
     },

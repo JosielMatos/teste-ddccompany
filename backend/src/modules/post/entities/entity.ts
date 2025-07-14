@@ -1,11 +1,11 @@
 import { Field, ID, InputType, ObjectType } from '@nestjs/graphql'
 import { Prisma } from '@prisma/client'
 import {
-    ConnectWhere,
-    GetEntityDTO,
-    MainResponse,
-    PaginationResponse,
-    createZodSchema,
+  ConnectWhere,
+  GetEntityDTO,
+  MainResponse,
+  PaginationResponse,
+  createZodSchema,
 } from 'src/@shared/graphql/types'
 import { z } from 'zod'
 import { createDTODBType, moduleMetadata, updateDTODBType } from '../moduleMetadata'
@@ -62,6 +62,10 @@ export class CreateDTO implements createDTODBType {
   published?: boolean
   static publishedZod = MainEntity.publishedZod.optional().default(false)
 
+  @Field(() => [ID], { nullable: true })
+  postCategories?: number[]
+  static postCategoriesZod = z.array(z.number().int().positive()).optional()
+
   @Field(() => ConnectWhere)
   author: Prisma.UserCreateNestedOneWithoutPostsInput
   static authorZod = ConnectWhere.zodSchema()
@@ -82,6 +86,10 @@ export class UpdateDTO implements updateDTODBType {
   @Field(() => String, { nullable: true })
   content?: string | Prisma.NullableStringFieldUpdateOperationsInput
   static contentZod = MainEntity.contentZod
+
+  @Field(() => [ID], { nullable: true })
+  postCategories?: number[]
+  static postCategoriesZod = z.array(z.number().int().positive()).optional()
 
   @Field(() => Boolean, { nullable: true })
   published?: boolean | Prisma.BoolFieldUpdateOperationsInput
