@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import api from '@/lib/axios'
 import { useAuth } from '@/hooks/useAuth'
+import { BackButton } from '@/app/components/BackButton'
 
 interface Analytics {
   user_id: number
@@ -58,6 +59,9 @@ export default function AnalyticsPage() {
   useAuth()
   const [analytics, setAnalytics] = useState<Analytics[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const filteredAnalytics = analytics.filter((item) => item.user_name?.toLowerCase().includes(searchTerm.toLowerCase()))
 
   useEffect(() => {
     api
@@ -71,11 +75,19 @@ export default function AnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-white p-8">
+      <BackButton className="mb-6" />
       <div className="max-w-2xl mx-auto mb-10">
         <h1 className="text-3xl font-bold mb-2 text-center text-black">Analytics</h1>
+        <input
+          type="text"
+          placeholder="Pesquisar por nome do usuário..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full border border-gray-300 rounded px-3 py-2 mt-4 text-black"
+        />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        {analytics.map((item) => (
+        {filteredAnalytics.map((item) => (
           <div
             key={item.user_id}
             className="rounded-xl shadow-md hover:shadow-lg transition-shadow bg-amber-50 p-6 flex flex-col"

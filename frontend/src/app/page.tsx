@@ -21,7 +21,6 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginSchema) => {
     try {
-      console.log(data)
       const { token } = await loginUser(data)
       storeToken(token)
       router.push('/dashboard')

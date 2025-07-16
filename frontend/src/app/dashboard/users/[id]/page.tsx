@@ -7,6 +7,7 @@ import { Pagination } from '@/app/components/Pagination'
 import { Modal } from '@/app/components/Modal'
 import { FiEdit, FiTrash } from 'react-icons/fi'
 import { useAuth } from '@/hooks/useAuth'
+import { BackButton } from '@/app/components/BackButton'
 
 interface UserResponse {
   data: {
@@ -182,6 +183,7 @@ export default function UserPage() {
 
   return (
     <div className="min-h-screen bg-white p-8">
+      <BackButton className="mb-6" />
       <div className="max-w-2xl mx-auto mb-10">
         <h1 className="text-3xl font-bold mb-2 text-center text-black">{user.name || 'Nome não informado'}</h1>
         <div className="flex items-center justify-center mb-4 gap-2">

@@ -15,6 +15,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   async validate(payload: any) {
     // Here, you can fetch the user from the database based on the payload
     // and return the user object. This object will be attached to req.user.
-    return { userId: payload.sub, username: payload.username }
+    return { userId: payload.sub, data: payload.data }
   }
 }

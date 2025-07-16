@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Pagination } from '@/app/components/Pagination'
 import { Modal } from '@/app/components/Modal'
 import { FiEdit, FiTrash } from 'react-icons/fi'
+import { BackButton } from '@/app/components/BackButton'
 
 type UserResponse = {
   data: {
@@ -107,6 +108,7 @@ export default function UsersListPage() {
 
   return (
     <div className="min-h-screen p-8 bg-white border">
+      <BackButton className="mb-6" />
       <div className="flex items-center justify-between max-w-4xl mx-auto mb-6">
         <h1 className="text-3xl font-bold text-black">Lista de usuários</h1>
         <button

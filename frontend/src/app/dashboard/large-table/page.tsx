@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Pagination } from '@/app/components/Pagination'
 import { Modal } from '@/app/components/Modal'
 import { FiEdit, FiTrash } from 'react-icons/fi'
+import { BackButton } from '@/app/components/BackButton'
 
 interface Company {
   id: number
@@ -106,6 +107,7 @@ export default function LargeTablePage() {
 
   return (
     <div className="min-h-screen bg-white p-8">
+      <BackButton className="mb-6" />
       <div className="flex items-center justify-between max-w-4xl mx-auto mb-6">
         <h2 className="text-2xl font-semibold text-gray-800">Empresas</h2>
         <button

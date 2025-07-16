@@ -4,24 +4,20 @@ FROM node:20
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy package.json and yarn.lock first
-COPY package.json yarn.lock ./
+# Copy package.json first
+COPY package*.json ./
 
 # Install Node.js dependencies
-RUN yarn install --frozen-lockfile
+RUN npm install --force
 
 # Copy the rest of the application code
-COPY . /app
+COPY . .
 
-# Generate Prisma client, run linter, and build the application
-RUN yarn prisma generate && \
-    yarn lint --fix --quiet && \
-    yarn build
+# Generate Prisma client
+RUN npx prisma generate
 
-# Expose the application port
+# Expose port
 EXPOSE 3000
 
-# Start the application
-CMD ["yarn", "start"]
-
-# Command can be defined in docker-compose.yml
+# Start the application in development mode
+CMD ["npm", "run", "dev"]

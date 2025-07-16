@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Pagination } from '@/app/components/Pagination'
 import { Modal } from '@/app/components/Modal'
 import { FiEdit, FiTrash } from 'react-icons/fi'
+import { BackButton } from '@/app/components/BackButton'
 
 interface Pokemon {
   id: number
@@ -95,6 +96,7 @@ export default function PokemonsPage() {
 
   return (
     <div className="min-h-screen bg-white p-8">
+      <BackButton className="mb-6" />
       <div className="flex items-center justify-between max-w-4xl mx-auto mb-6">
         <h1 className="text-3xl font-bold text-black">Pokémons</h1>
         <button

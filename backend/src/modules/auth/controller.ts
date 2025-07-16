@@ -1,27 +1,19 @@
-import { Body, Controller, Post, Req, Res } from '@nestjs/common'
-import { Request, Response } from 'express'
-import jwt from 'jsonwebtoken'
+import { Body, Controller, HttpCode, HttpStatus, Post, Res } from '@nestjs/common'
+import { AuthService } from './service'
 
 @Controller('auth')
 export class AuthController {
-  // POST /login
+  constructor(private readonly authService: AuthService) {}
+
+  @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(@Req() req: any, @Body() body: any, @Res() res: Response) {
-    const { username, password } = body
+  login(@Body() body: any, @Res() res: any) {
+    const token = this.authService.execute(body)
 
-    // TODO: Replace with real user validation
-    if (username === 'admin' && password === 'password') {
-      // Simulate user ID and permissions
-      const userId = '12345'
-      const permissions = ['api-criar-user', 'api-ler-user', 'api-atualizar-user', 'api-deletar-user'] // Example permissions
-      const payload = {
-        sub: userId,
-        data: permissions,
-      }
-      const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '24h' })
+    if (token) {
       return res.json({ token })
+    } else {
+      return res.status(HttpStatus.UNAUTHORIZED).json({ error: 'Invalid credentials' })
     }
-
-    return res.status(401).json({ message: 'Invalid credentials' })
   }
 }

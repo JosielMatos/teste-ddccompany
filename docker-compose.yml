@@ -3,7 +3,7 @@ version: "3.8"
 services:
   db:
     image: postgres:15-alpine
-    container_name: teste-postgres-db
+    container_name: postgres-db
     environment:
       POSTGRES_DB: teste_backend_db
       POSTGRES_USER: postgres
@@ -14,7 +14,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
     container_name: backend
     depends_on:
       - db
@@ -24,19 +25,23 @@ services:
       - "3000:3000"
     volumes:
       - ./backend:/app
-    command: yarn start:prod
+      - /app/node_modules
+    command: npm run dev
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
     container_name: frontend
     depends_on:
       - backend
     ports:
-      - "3001:3000"
+      - "3001:3001"
     volumes:
       - ./frontend:/app
+      - /app/node_modules
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:3000
+    command: npm run dev
 
 volumes:
   postgres_data:
