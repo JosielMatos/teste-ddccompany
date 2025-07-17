@@ -78,8 +78,8 @@ export default function UsersListPage() {
   function handleOpenEdit(user: User) {
     setEditingUser(user)
     setForm({
-      name: user.name,
-      email: user.email,
+      name: user.name || '',
+      email: user.email || '',
     })
     setShowModal(true)
   }

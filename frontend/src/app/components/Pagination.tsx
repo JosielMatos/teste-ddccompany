@@ -7,7 +7,6 @@ type PaginationProps = {
 export function Pagination({ page, totalPages, onPageChange }: PaginationProps) {
   if (totalPages <= 1) return null
 
-  // Lógica para mostrar no máximo 5 páginas
   const maxPagesToShow = 5
   let startPage = Math.max(1, page - Math.floor(maxPagesToShow / 2))
   let endPage = startPage + maxPagesToShow - 1
